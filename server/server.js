@@ -21,6 +21,11 @@ app.get('/login', (req, res) => {
     res.sendFile('login.html', { root: publicPath });
 });
 
+app.get('/register', (req, res) => {
+    // res.send('Hello World');
+    res.sendFile('register.html', { root: publicPath });
+});
+
 app.get('/chat', (req, res) => {
     res.sendFile('chat.html', { root: publicPath });
 });
@@ -33,7 +38,7 @@ app.post('/users', (req, res) => {
         return user.generateAuthToken();
         // res.send(user);
     }).then((token) => {
-        res.header('x-auth', token).send(user);
+        res.header('x-auth', token).send({ user, token });
     }).catch((e) => {
         res.status(400).send(e);
     });
