@@ -16,9 +16,9 @@ app.use(bodyParser.json());
 const publicPath = path.join(__dirname, '../public');
 app.use(express.static(publicPath));
 
-app.get('/', (req, res) => {
+app.get('/login', (req, res) => {
     // res.send('Hello World');
-    res.render(index);
+    res.sendFile('login.html', { root: publicPath });
 });
 
 //creating user
