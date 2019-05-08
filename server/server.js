@@ -21,6 +21,10 @@ app.get('/login', (req, res) => {
     res.sendFile('login.html', { root: publicPath });
 });
 
+app.get('/chat', (req, res) => {
+    res.sendFile('chat.html', { root: publicPath });
+});
+
 //creating user
 app.post('/users', (req, res) => {
     var body = _.pick(req.body, ['email', 'password'])
@@ -46,7 +50,7 @@ app.post('/users/login', (req, res) => {
     User.findByCredentials(body.email, body.password).then((user) => {
         // res.send(user);
         return user.generateAuthToken().then((token) => {
-            res.header('x-auth', token).send(user);
+            res.header('x-auth', token).send({user , token});
         })
     }).catch((e) => {
         res.status(400).send('Error');
