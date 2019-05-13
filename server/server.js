@@ -23,6 +23,7 @@ const { generateLocationMessage } = require('./utils/message');
 const { isRealString } = require('./utils/validation');
 const { Users } = require('./utils/users')
 var users = new Users();
+var AYLIENTextAPI = require('aylien_textapi');
 
 
 app.get('/', (req, res) => {
@@ -91,9 +92,33 @@ io.on('connection', (socket) => {
     });
 
     socket.on('createMessage', (message, callback) => {
+        var textapi = new AYLIENTextAPI({
+            application_id: "457cc307",
+            application_key: "e6ad2f1bc6fd90897561fd2ecab2713f"
+        });
+        
         var user = users.getUser(socket.id);
         if (user && isRealString(message.text)) {
-            io.to(user.room).emit('newMessage', generateMessage(user.name, message.text));
+            textapi.sentiment({
+                'text': message.text
+                }, function(error, response) {
+                if (error === null) {
+                    if (response.polarity === 'neutral'){
+                        message.text = message.text + ' :|';
+                    }
+                    if (response.polarity === 'positive') {
+                        message.text = message.text + ' :)';
+                    }
+                    if (response.polarity === 'negative') {
+                        message.text = message.text + ' :(';
+                    }
+                    io.to(user.room).emit('newMessage', generateMessage(user.name, message.text));
+                }
+                else
+                {
+                    io.to(user.room).emit('newMessage', generateMessage(user.name, message.text));
+                }
+            });
         }
         callback();
     });

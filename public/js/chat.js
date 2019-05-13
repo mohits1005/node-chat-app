@@ -34,7 +34,6 @@ function getCookie(cname) {
 
 socket.on('connect', function() {
     console.log('Connected to server');
-    // var params = jQuery.deparam(window.location.search);
     var chatToken = getCookie('chattoken');
     var email = getCookie('email');
     var params = {
@@ -50,17 +49,6 @@ socket.on('connect', function() {
             console.log('No error');
         }
     });
-    // socket.emit('createEmail', {
-    //     to: 'aku@example.com',
-    //     text: 'Hey. This is Moh.'
-    // });
-
-    // socket.emit('createMessage', {
-    //     from: 'moh',
-    //     text: 'Hi'
-    // }, function(data) {
-    //     console.log('Got it' + data);
-    // });
 });
 
 socket.on('disconnect', function() {
@@ -76,16 +64,9 @@ socket.on('updateUserList', function(users) {
     jQuery('#users').html(ol);
 });
 
-// socket.on('newEmail', function(email) {
-//     console.log('New email', email);
-// });
-
 socket.on('newMessage', function(message) {
-    // console.log('newMessage', message);
+    console.log('newMessage', message);
     var formattedTime = moment(message.createdAt).format('h:mm a');
-    // var li = jQuery('<li></li>');
-    // li.text(`${message.from} ${formattedTime}: ${message.text}`);
-    // jQuery('#messages').append(li);
     var template = jQuery('#message-template').html();
     var html = Mustache.render(template, {
         text: message.text,
@@ -98,12 +79,6 @@ socket.on('newMessage', function(message) {
 
 socket.on('newLocationMessage', function(message) {
     var formattedTime = moment(message.createdAt).format('h:mm a');
-    // var li = jQuery('<li></li>');
-    // var a = jQuery('<a target="_blank">My current location</a>')
-    // li.text(`${message.from} ${formattedTime}: `);
-    // a.attr('href', message.url);
-    // li.append(a);
-    // jQuery('#messages').append(li);
     var template = jQuery('#location-message-template').html();
     var html = Mustache.render(template, {
         text: message.text,
@@ -132,7 +107,6 @@ locationButton.on('click', function() {
     }
     locationButton.attr('disabled', 'disabled').text('Sending location...')
     navigator.geolocation.getCurrentPosition(function(position) {
-        // console.log(position);
         locationButton.removeAttr('disabled').text('Send location');
         socket.emit('createLocationMessage', {
             latitude: position.coords.latitude,
