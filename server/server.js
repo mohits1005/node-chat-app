@@ -16,13 +16,15 @@ app.use(bodyParser.json());
 const publicPath = path.join(__dirname, '../public');
 app.use(express.static(publicPath));
 
+app.get('/', (req, res) => {
+    res.redirect('/login');
+});
+
 app.get('/login', (req, res) => {
-    // res.send('Hello World');
     res.sendFile('login.html', { root: publicPath });
 });
 
 app.get('/register', (req, res) => {
-    // res.send('Hello World');
     res.sendFile('register.html', { root: publicPath });
 });
 
@@ -36,7 +38,6 @@ app.post('/users', (req, res) => {
     var user = new User(body);
     user.save().then((user) => {
         return user.generateAuthToken();
-        // res.send(user);
     }).then((token) => {
         res.header('x-auth', token).send({ user, token });
     }).catch((e) => {
