@@ -13,4 +13,17 @@ var generateLocationMessage = (from, latitude, longitude) => {
         createdAt: moment().valueOf()
     };
 };
-module.exports = { generateMessage, generateLocationMessage };
+class Messages {
+    constructor() {
+        this.messages = [];
+    }
+    addMessage(from, text, createdAt) {
+        var message = { from, text, createdAt };
+        this.messages.push(message);
+        return message;
+    }
+    getMessageList() {
+        return this.messages;
+    }
+}
+module.exports = { generateMessage, generateLocationMessage, Messages };

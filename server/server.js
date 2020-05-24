@@ -9,6 +9,7 @@ const socketIO = require('socket.io')
 
 var { mongoose } = require('./db/mongoose');
 var { User } = require('./models/user');
+var { Message } = require('./models/message');
 var { authenticate } = require('./middleware/authenticate');
 const { ObjectID } = require('mongodb');
 var app = express();
@@ -20,10 +21,13 @@ var server = http.createServer(app);
 var io = socketIO(server);
 const { generateMessage } = require('./utils/message');
 const { generateLocationMessage } = require('./utils/message');
+const { Messages } = require('./utils/message');
 const { isRealString } = require('./utils/validation');
 const { Users } = require('./utils/users')
 var users = new Users();
+var messages = new Messages();
 var AYLIENTextAPI = require('aylien_textapi');
+var moment = require('moment');
 
 
 app.get('/', (req, res) => {
@@ -77,7 +81,7 @@ app.post('/users/login', (req, res) => {
 io.on('connection', (socket) => {
     console.log('New User Connected.');
 
-    socket.on('join', (params, callback) => {
+    socket.on('join', async (params, callback) => {
         if (!isRealString(params.name) || !isRealString(params.room)) {
             return callback('Name and Room Name are required.');
         }
@@ -86,18 +90,34 @@ io.on('connection', (socket) => {
         users.addUser(socket.id, params.name, params.room);
         io.to(params.room).emit('updateUserList', users.getUserList(params.room));
         socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat app'));
-
+        //get message list start
+        var messageList = await Message.findMessages().then((data) => {
+            return data
+        }).catch((e) => {
+            return []
+        });
+        console.log('messageList', {messageList});
+        socket.emit('messageList', {messageList});
+        //get message list end
         socket.broadcast.to(params.room).emit('newMessage', generateMessage('Admin', `${params.name} has joined.`));
         callback();
     });
 
-    socket.on('createMessage', (message, callback) => {
+    socket.on('createMessage', async (message, callback) => {
         var textapi = new AYLIENTextAPI({
             application_id: "457cc307",
             application_key: "e6ad2f1bc6fd90897561fd2ecab2713f"
         });
         
         var user = users.getUser(socket.id);
+        //save message start
+        var message = new Message({ from: user.name, text: message.text, createdAt: moment().valueOf()});
+        var msave = await message.save().then((data) => {
+            console.log('message saved in db')
+            return
+        })
+        messages.addMessage(message);
+        //save message end
         if (user && isRealString(message.text)) {
             textapi.sentiment({
                 'text': message.text
